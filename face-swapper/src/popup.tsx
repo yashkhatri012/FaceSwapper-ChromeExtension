@@ -62,7 +62,7 @@ function IndexPopup() {
       )}
 
 
-      <button onClick={handleSelectionMode}>  Selection Mode</button>
+      <button className="plasmo-border-black plasmo-shadow-xl" onClick={handleSelectionMode}>  Selection Mode</button>
     </div>
   )
 }

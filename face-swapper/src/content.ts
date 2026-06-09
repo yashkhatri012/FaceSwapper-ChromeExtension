@@ -28,4 +28,11 @@ document.addEventListener("click", async (e) => {
   await chrome.storage.local.set({
     selectionMode: false
   })
+
+
+  chrome.runtime.sendMessage({
+  action: "SWAP_FACE",
+  imageId,
+  targetImageUrl: img.src
+})
 })
