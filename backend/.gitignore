@@ -24,7 +24,9 @@ yarn-error.log*
 
 # local env files
 .env*
-
+temp/result/
+temp/source/
+temp/target/
 out/
 build/
 dist/
