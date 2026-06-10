@@ -7,6 +7,11 @@ import axios from "axios"
 import fs from "fs"
 import path from "path"
 
+import crypto from "crypto"
+import { exec } from "child_process"
+import { promisify } from "util"
+
+const execAsync = promisify(exec)
 
 dotenv.config()
 
@@ -15,6 +20,9 @@ const app = express()
 app.use(cors())
 
 app.use(express.json({ limit: "50mb" }))
+app.use("/results", express.static("temp/result"))
+
+
 
 app.get("/", (_, res) => {
   res.json({
@@ -25,53 +33,82 @@ app.get("/", (_, res) => {
 
 
 
+
+
 app.post("/api/swap", async (req, res) => {
   try {
     const { sourceFace, targetImageUrl } = req.body
 
-    console.log("Source Length:", sourceFace?.length)
-    console.log("Target URL:", targetImageUrl)
-    
-    // For downloading image
+    const id = crypto.randomUUID()
+    // path where to save it, craetes temp/target.jpg
+    const sourcePath = path.join("temp", "source", `${id}.jpg`)
+    const targetPath = path.join("temp", "target", `${id}.jpg`)
+    const resultPath = path.join("temp", "result", `${id}.jpg`)
+
+    // Save source image
+
+    const base64Data = sourceFace.replace(
+      /^data:image\/\w+;base64,/,
+      ""
+    )
+
+    await fs.promises.writeFile(
+      sourcePath,
+      base64Data,
+      "base64"
+    )
+
+    // Download target image
+
     const response = await axios({
       url: targetImageUrl,
       method: "GET",
       responseType: "arraybuffer"
     })
 
-    // For saving sourceFace
-    const base64Data = sourceFace.replace(
-            /^data:image\/\w+;base64,/,
-            ""
-            )
-
     await fs.promises.writeFile(
-    path.join("temp", "source.jpg"),
-    base64Data,
-    "base64"
+      targetPath,
+      response.data
     )
 
-console.log("Source image saved")
-    // path where to save it, craetes temp/target.jpg
-    const imagePath = path.join("temp", "target.jpg")
+    console.log("Starting FaceFusion...")
+     const FACEFUSION_PATH = process.env.FACEFUSION_PATH
+    const FACEFUSION_PYTHON = process.env.FACEFUSION_PYTHON
+    const FACEFUSION_MODEL = process.env.FACEFUSION_MODEL || "ghost_3_256"
+    const command = `"${FACEFUSION_PYTHON}" facefusion.py headless-run -s "${path.resolve(
+        sourcePath
+      )}" -t "${path.resolve(
+        targetPath
+      )}" -o "${path.resolve(
+        resultPath
+      )}" --processors face_swapper --face-swapper-model "${FACEFUSION_MODEL}"`
 
-    await fs.promises.writeFile(imagePath, response.data)
+     
+      
+      const { stdout, stderr } = await execAsync(command, {
+        cwd: FACEFUSION_PATH ,
+        maxBuffer: 1024 * 1024 * 20
+      })
 
-    console.log("Image saved:", imagePath)
+      console.log(stdout)
 
+      if (stderr) {
+        console.log(stderr)
+      }
     return res.status(200).json({
       success: true,
-      downloaded: true
+      imageUrl: `http://localhost:5000/results/${id}.jpg`
     })
   } catch (error) {
     console.error(error)
 
     return res.status(500).json({
       success: false,
-      message: "Download failed"
+      message: "Swap failed"
     })
   }
 })
+
 
 const PORT = process.env.PORT || 5000
 

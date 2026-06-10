@@ -9,11 +9,14 @@ document.addEventListener("click", async (e) => {
     await chrome.storage.local.get("selectionMode")
 
   if (!selectionMode) return
+  
+  
 
   const target = e.target as HTMLElement
 
   if (target.tagName !== "IMG") return
-
+  e.preventDefault()
+  e.stopPropagation()
   const img = target as HTMLImageElement
 
   const imageId = crypto.randomUUID()
@@ -30,9 +33,29 @@ document.addEventListener("click", async (e) => {
   })
 
 
-  chrome.runtime.sendMessage({
+  const response = await chrome.runtime.sendMessage({
   action: "SWAP_FACE",
   imageId,
   targetImageUrl: img.src
 })
-})
+
+console.log(response)
+
+
+
+
+
+if (response?.success) {
+
+  const swappedImg = document.createElement("img")
+
+    swappedImg.src = response.imageUrl
+
+    img.replaceWith(swappedImg)
+}
+
+
+
+},
+true
+)
