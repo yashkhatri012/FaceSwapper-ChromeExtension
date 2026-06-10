@@ -4,58 +4,68 @@ export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"]
 }
 
-document.addEventListener("click", async (e) => {
-  const { selectionMode } =
-    await chrome.storage.local.get("selectionMode")
+document.addEventListener(
+  "click",
+  async (e) => {
+    const { selectionMode } =
+      await chrome.storage.local.get("selectionMode")
 
-  if (!selectionMode) return
-  
-  
+    if (!selectionMode) return
 
-  const target = e.target as HTMLElement
+    const target = e.target as HTMLElement
 
-  if (target.tagName !== "IMG") return
-  e.preventDefault()
-  e.stopPropagation()
-  const img = target as HTMLImageElement
+    let targetImageUrl = ""
 
-  const imageId = crypto.randomUUID()
+    if (target.tagName === "IMG") {
+      targetImageUrl = (target as HTMLImageElement).src
+    } else {
+      const backgroundImage =
+        window.getComputedStyle(target).backgroundImage
 
-  img.dataset.faceSwapId = imageId
+      const match = backgroundImage.match(
+        /url\(["']?(.*?)["']?\)/
+      )
 
-  console.log({
-    imageId,
-    src: img.src
-  })
+      if (match) {
+        targetImageUrl = match[1]
+      }
+    }
 
-  await chrome.storage.local.set({
-    selectionMode: false
-  })
+    if (!targetImageUrl) return
 
+    e.preventDefault()
+    e.stopPropagation()
 
-  const response = await chrome.runtime.sendMessage({
-  action: "SWAP_FACE",
-  imageId,
-  targetImageUrl: img.src
-})
+    const imageId = crypto.randomUUID()
 
-console.log(response)
+    target.dataset.faceSwapId = imageId
 
+    console.log({
+      imageId,
+      targetImageUrl
+    })
 
+    await chrome.storage.local.set({
+      selectionMode: false
+    })
 
+    const response = await chrome.runtime.sendMessage({
+      action: "SWAP_FACE",
+      imageId,
+      targetImageUrl
+    })
 
+    console.log(response)
 
-if (response?.success) {
-
-  const swappedImg = document.createElement("img")
-
-    swappedImg.src = response.imageUrl
-
-    img.replaceWith(swappedImg)
-}
-
-
-
-},
-true
+    if (response?.success) {
+      if (target.tagName === "IMG") {
+        ;(target as HTMLImageElement).src =
+          `${response.imageUrl}?t=${Date.now()}`
+      } else {
+        target.style.backgroundImage =
+          `url("${response.imageUrl}?t=${Date.now()}")`
+      }
+    }
+  },
+  true
 )
