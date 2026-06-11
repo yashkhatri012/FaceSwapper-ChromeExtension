@@ -81,7 +81,7 @@ app.post("/api/swap", async (req, res) => {
     console.log("Starting FaceFusion...")
      const FACEFUSION_PATH = process.env.FACEFUSION_PATH
     const FACEFUSION_PYTHON = process.env.FACEFUSION_PYTHON
-    const FACEFUSION_MODEL = process.env.FACEFUSION_MODEL || "ghost_3_256"
+    const FACEFUSION_MODEL = process.env.FACEFUSION_MODEL || "inswapper_128"
     const command = `"${FACEFUSION_PYTHON}" facefusion.py headless-run -s "${path.resolve(
         sourcePath
       )}" -t "${path.resolve(
