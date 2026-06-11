@@ -41,6 +41,19 @@ Swapped Result Generated
 Image Replaced On Page
 ```
 
+
+## Before Face Swap
+
+![Before Screenshot](screenshots/before.png)
+
+### Face Swap Result
+
+![Result Screenshot](screenshots/after.png)
+
+### Extension Popup
+
+![Popup Screenshot](screenshots/popup.png)
+
 ---
 
 ## Architecture
@@ -211,19 +224,6 @@ Enable Developer Mode and select **Load unpacked**.
 * Improved visual image picker
 * Cross device syncing
 
----
-
-## Before Face Swap
-
-![Before Screenshot](screenshots/before.png)
-
-### Extension Popup
-
-![Popup Screenshot](screenshots/popup.png)
-
-### Face Swap Result
-
-![Result Screenshot](screenshots/after.png)
 
 ---
 
