@@ -4,6 +4,64 @@ export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"]
 }
 
+let hoveredElement: HTMLElement | null = null
+let selectionMode = false
+
+
+chrome.storage.local.get("selectionMode").then((result) => {
+  selectionMode = result.selectionMode ?? false
+})
+
+chrome.storage.onChanged.addListener((changes) => {
+  if (changes.selectionMode) {
+    selectionMode = changes.selectionMode.newValue
+  }
+})
+
+
+
+function isImageElement(element: HTMLElement) {
+  if (element.tagName === "IMG") return true
+
+  const backgroundImage =
+    window.getComputedStyle(element).backgroundImage
+
+  return backgroundImage !== "none"
+}
+
+
+document.addEventListener("mousemove",  (e) => {
+ 
+
+  if (!selectionMode) {
+    if (hoveredElement) {
+     
+      hoveredElement = null
+    }
+    return
+  }
+
+  const element = document.elementFromPoint(
+    e.clientX,
+    e.clientY
+  ) as HTMLElement | null
+
+  
+  if (!element) return
+
+  if (!isImageElement(element)) return
+
+  if (element === hoveredElement) return
+
+  
+
+  hoveredElement = element
+
+  
+})
+
+
+
 function showLoading(element: HTMLElement) {
   const rect = element.getBoundingClientRect()
 
@@ -41,12 +99,14 @@ function hideLoading(overlay: HTMLElement | null) {
 document.addEventListener(
   "click",
   async (e) => {
-    const { selectionMode } = await chrome.storage.local.get("selectionMode")
+    // const { selectionMode } = await chrome.storage.local.get("selectionMode")
 
     if (!selectionMode) return
 
-    const target = e.target as HTMLElement
+    // const target = e.target as HTMLElement
+    const target = hoveredElement
 
+      if (!target) return
     let targetImageUrl = ""
 
     if (target.tagName === "IMG") {
@@ -65,6 +125,8 @@ document.addEventListener(
 
     e.preventDefault()
     e.stopPropagation()
+    e.stopImmediatePropagation()
+
 
     const imageId = crypto.randomUUID()
 
@@ -79,6 +141,10 @@ document.addEventListener(
       selectionMode: false
     })
 
+    if (hoveredElement) {
+      
+      hoveredElement = null
+    }
     const loadingOverlay = showLoading(target)
 
     
