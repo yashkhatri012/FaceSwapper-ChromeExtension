@@ -31,7 +31,14 @@ app.get("/", (_, res) => {
   })
 })
 
-
+async function deleteFile(filePath) {
+  try {
+    await fs.promises.unlink(filePath)
+    console.log(`Deleted: ${filePath}`)
+  } catch (err) {
+    console.error(`Failed to delete ${filePath}`, err)
+  }
+}
 
 
 
@@ -95,6 +102,15 @@ app.post("/api/swap", async (req, res) => {
       if (stderr) {
         console.log(stderr)
       }
+
+      setTimeout(async () => {
+        await deleteFile(sourcePath)
+        await deleteFile(targetPath)
+        await deleteFile(resultPath)
+      }, 5 * 60 * 1000)
+
+
+
     return res.status(200).json({
       success: true,
       imageUrl: `http://localhost:5000/results/${id}.jpg`
