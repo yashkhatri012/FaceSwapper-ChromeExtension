@@ -5,6 +5,10 @@ Transform faces on any website with a single click.
 FaceSwapper is a Chrome extension powered by FaceFusion that allows users to upload a source face and replace faces in images directly from their browser. The extension works on both traditional image elements and websites that use CSS background images, making it compatible with many modern e-commerce and content platforms.
 
 ---
+## Video demo -
+https://drive.google.com/file/d/1022xZYBwYQOiECWrBa0hXvZSV1ehhS-n/view?usp=sharing
+
+---
 
 ## Features
 
